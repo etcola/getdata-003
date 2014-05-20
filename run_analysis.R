@@ -36,7 +36,7 @@ data_extract <- data.table(data_extract)
 # Update data_extract with acitivity labels.
 data_extract[, activity := label_merge$label]
 # Write data_extra to local file.
-write.table(data_extract, "data_extract.csv", row.names=FALSE)
+write.table(data_extract, "data_extract.txt", row.names=FALSE)
 
 
 # 5. Creates a second, independent tidy data set with the average of each
@@ -58,4 +58,4 @@ average <- t(average)
 average_correct <- data.table(average)
 average_correct$activity <- sub("[0-9]+\\.", "", rownames(average))
 # Write the result into data_average.csv
-write.table(average_correct, "data_average.csv", row.names=FALSE)
+write.table(average_correct, "data_average.txt", row.names=FALSE)
