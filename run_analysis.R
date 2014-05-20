@@ -10,8 +10,8 @@ colnames <- as.character(read.table("data/features.txt")[, 2])
 colnames(data_merge) <- colnames
 
 
-# 2. Extracts only the measurements on the mean and standard deviation 
-# for each measurement. 
+# 2. Extracts only the measurements on the mean and standard deviation
+# for each measurement.
 # Extract columns with name containing mean() or std(), store in data_extract.
 mean_or_std <- grepl("mean\\(\\)", colnames) | grepl("std\\(\\)", colnames)
 data_extract <- data_merge[, mean_or_std]
@@ -24,14 +24,29 @@ label_test <- read.table("data/test/y_test.txt", header=FALSE)
 label_merge <- rbind(label_train, label_test)
 colnames(label_merge) <- "acitivity_id"
 # Read the mapping table from acitivity ids to human-readable labels.
-labelnames <- read.table("data/activity_labels.txt", 
+labelnames <- read.table("data/activity_labels.txt",
                          col.names=c("acitivity_id", "label"))
 # Left join label_merge and labelnames on acitivity_id, update label_merge.
 label_merge <- merge(label_merge, labelnames, all.x=TRUE)
 
 
-# 4. Appropriately labels the data set with descriptive activity names. 
+# 4. Appropriately labels the data set with descriptive activity names.
 # Convert data_extract into data.table for effieciency and convenience.
 data_extract <- data.table(data_extract)
 # Update data_extract with acitivity labels.
 data_extract[, activity := label_merge$label]
+
+
+# 5. Creates a second, independent tidy data set with the average of each
+# variable for each activity and each subject.
+# Split data_extract by subject and activity, and calculate variable means.
+tidy <- sapply(split(data_extract,
+                     list(data_extract$subject, data_extract$activity),
+                     drop=TRUE),
+               function (subset) sapply(subset, mean))
+# Transpose the matrix.
+tidy <- t(tidy)
+# Store back the result as a data.table, correcting the NAs in activity output
+# by mean function at last step.
+tidy_correct <- data.table(tidy)
+tidy_correct$activity <- sub("[0-9]+\\.", "", rownames(tidy))
